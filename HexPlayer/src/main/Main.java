@@ -36,6 +36,7 @@ import javax.imageio.ImageIO;
 import javazoom.jl.decoder.Equalizer;
 import misc.Slider;
 import misc.TImageButton;
+import misc.ToggleButton;
 
 public class Main
 {
@@ -748,7 +749,7 @@ public class Main
 		private Frame volFrame;
 		private Panel volPanel;
 		private Slider[] sliders = new Slider[33];
-		private TextArea[] text = new TextArea[33];
+		private ToggleButton[] toggles = new ToggleButton[33];
 		private Equalizer equalizer;
 
 		public VolumeChanger()
@@ -767,10 +768,10 @@ public class Main
 				{
 					for(int i = 0; i < sliders.length; i++)
 					{
-						text[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i),0);
-						text[i].setSize((int) (float) ((float) volPanel.getWidth() / 32),20);
-						sliders[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), 20);
-						sliders[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), volPanel.getHeight()-40);
+						sliders[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), 0);
+						sliders[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), volPanel.getHeight() - 20);
+						toggles[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), volPanel.getHeight() - 20);
+						toggles[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), 20);
 					}
 				}
 			});
@@ -778,26 +779,22 @@ public class Main
 			volPanel.setLayout(null);
 			volPanel.setBackground(Color.black);
 			volFrame.add(volPanel);
-				equalizer = new Equalizer();
+			equalizer = new Equalizer();
 			for(int i = 0; i < sliders.length; i++)
 			{
 				sliders[i] = new Slider(3);
+				toggles[i] = new ToggleButton(3);
 				volPanel.add(sliders[i]);
 				sliders[i].addMouseListener(this);
 				sliders[i].addMouseMotionListener(this);
 				sliders[i].setVertical(true);
-				text[i] = new TextArea();
-				volPanel.add(text[i]);
-				text[i].setEditable(false);
 				if(i > 0)
 				{
 					sliders[i].setTotal(2);
 					sliders[i].setProgress(1);
 					sliders[i].setLeftOnly(true);
-					text[i].setText("Band "+i);
 				}
 			}
-			text[0].setText("Volume");
 			sliders[0].setTotal(1);
 			sliders[0].setProgress(0.10f);
 			player.setVolume(0.10f);
@@ -806,6 +803,33 @@ public class Main
 
 		public void mouseClicked(MouseEvent e)
 		{
+			if(e.getSource() == toggles[0])
+			{
+				if(toggles[0].getState())
+				{
+					player.setVolume(sliders[0].getProgress());
+				}
+				else
+				{
+					player.setVolume(0f);
+				}
+			}
+			for(int i = 1; i < toggles.length; i++)
+			{
+				if(e.getSource() == toggles[i])
+				{
+					if(toggles[i].getState())
+					{
+						equalizer.setBand(i - 1, sliders[i].getProgress() - 1);
+						player.setEqualizer(equalizer);
+					}
+					else
+					{
+						equalizer.setBand(i - 1, 0.0f);
+						player.setEqualizer(equalizer);
+					}
+				}
+			}
 		}
 
 		public void mousePressed(MouseEvent e)
@@ -821,23 +845,26 @@ public class Main
 					player.setVolume(sliders[0].getProgress());
 				}
 			}
-				for(int i = 1; i < sliders.length; i++)
+			for(int i = 1; i < sliders.length; i++)
+			{
+				if(e.getSource() == sliders[i])
 				{
-					if(e.getSource() == sliders[i])
+					if(e.getButton() == MouseEvent.BUTTON1)
 					{
-						if(e.getButton() == MouseEvent.BUTTON1)
+						if(toggles[i].getState())
 						{
 							equalizer.setBand(i - 1, sliders[i].getProgress() - 1);
 							player.setEqualizer(equalizer);
 						}
-						else
-						{
-							sliders[i].setProgress(1);
-							equalizer.setBand(i - 1, 0.0f);
-							player.setEqualizer(equalizer);
-						}
+					}
+					else
+					{
+						sliders[i].setProgress(1);
+						equalizer.setBand(i - 1, 0.0f);
+						player.setEqualizer(equalizer);
 					}
 				}
+			}
 		}
 
 		public void mouseEntered(MouseEvent e)
