@@ -563,12 +563,10 @@ public class Player
 	{
 		if(vol !=0)
 		{
-			System.out.println("Set Gain to "+(float)(20.0f * Math.log10(vol)));
 			setGain((float)(20.0f * Math.log10(vol)));
 		}
 		else
 		{
-			System.out.println("Set Gain to "+-144.0f);
 			setGain(-144.0f);
 		}
 	}

@@ -57,6 +57,11 @@ public class ToggleButton extends Panel implements MouseListener
 	{
 		return state;
 	}
+	
+	public void setState(boolean state)
+	{
+		this.state = state;
+	}
 
 	public void toggle()
 	{
@@ -76,6 +81,7 @@ public class ToggleButton extends Panel implements MouseListener
 	public void mouseClicked(MouseEvent e)
 	{
 		toggle();
+		repaint();
 	}
 
 	public void mousePressed(MouseEvent e)

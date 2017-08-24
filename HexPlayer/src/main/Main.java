@@ -13,7 +13,6 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.List;
 import java.awt.Panel;
-import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -199,9 +198,11 @@ public class Main
 
 		buttons = new ButtonPanel();
 		songPanel = new SongPanel();
+		songPanel.setLayout(null);
+		mainPanel.setLayout(null);
 		frame.add(mainPanel);
-		mainPanel.add(buttons, BorderLayout.WEST);
-		mainPanel.add(songPanel, BorderLayout.CENTER);
+		mainPanel.add(buttons);
+		mainPanel.add(songPanel);
 		frame.pack();
 		frame.setSize(656, 399);
 		buttons.setPreferredSize(new Dimension(45, 0));
@@ -524,7 +525,7 @@ public class Main
 							slider.setTotal(player.getTotalDuration() * 1000);
 							if(!slider.isDragging())
 							{
-								slider.setProgress(player.getCurrentMillis());
+								slider.setValue(player.getCurrentMillis());
 							}
 						}
 						frameRate(60);
@@ -730,7 +731,7 @@ public class Main
 			if(player.isPlaying())
 			{
 				player.stopSong();
-				player.playSongAtTime((int) slider.getProgress() / 26);
+				player.playSongAtTime((int) slider.getValue() / 26);
 			}
 			slider.stopDragging();
 		}
@@ -783,7 +784,6 @@ public class Main
 			for(int i = 0; i < sliders.length; i++)
 			{
 				sliders[i] = new Slider(3);
-				toggles[i] = new ToggleButton(3);
 				volPanel.add(sliders[i]);
 				sliders[i].addMouseListener(this);
 				sliders[i].addMouseMotionListener(this);
@@ -791,12 +791,16 @@ public class Main
 				if(i > 0)
 				{
 					sliders[i].setTotal(2);
-					sliders[i].setProgress(1);
+					sliders[i].setValue(1);
 					sliders[i].setLeftOnly(true);
 				}
+				toggles[i] = new ToggleButton(3);
+				toggles[i].setState(true);
+				volPanel.add(toggles[i]);
+				toggles[i].addMouseListener(this);
 			}
 			sliders[0].setTotal(1);
-			sliders[0].setProgress(0.10f);
+			sliders[0].setValue(0.10f);
 			player.setVolume(0.10f);
 			volFrame.setVisible(true);
 		}
@@ -807,7 +811,7 @@ public class Main
 			{
 				if(toggles[0].getState())
 				{
-					player.setVolume(sliders[0].getProgress());
+					player.setVolume(sliders[0].getValue());
 				}
 				else
 				{
@@ -820,7 +824,7 @@ public class Main
 				{
 					if(toggles[i].getState())
 					{
-						equalizer.setBand(i - 1, sliders[i].getProgress() - 1);
+						equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 						player.setEqualizer(equalizer);
 					}
 					else
@@ -842,7 +846,7 @@ public class Main
 			{
 				if(e.getSource() == sliders[0])
 				{
-					player.setVolume(sliders[0].getProgress());
+					player.setVolume(sliders[0].getValue());
 				}
 			}
 			for(int i = 1; i < sliders.length; i++)
@@ -853,13 +857,13 @@ public class Main
 					{
 						if(toggles[i].getState())
 						{
-							equalizer.setBand(i - 1, sliders[i].getProgress() - 1);
+							equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 							player.setEqualizer(equalizer);
 						}
 					}
 					else
 					{
-						sliders[i].setProgress(1);
+						sliders[i].setValue(1);
 						equalizer.setBand(i - 1, 0.0f);
 						player.setEqualizer(equalizer);
 					}
@@ -885,7 +889,7 @@ public class Main
 			{
 				if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
 				{
-					player.setVolume(sliders[0].getProgress());
+					player.setVolume(sliders[0].getValue());
 				}
 			}
 			for(int i = 1; i < sliders.length; i++)
@@ -894,14 +898,12 @@ public class Main
 				{
 					if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
 					{
-						System.out.println("Button1");
-						equalizer.setBand(i - 1, sliders[i].getProgress() - 1);
+						equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 						player.setEqualizer(equalizer);
 					}
 					else if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button3"))
 					{
-						System.out.println("Button3");
-						sliders[i].setProgress(1);
+						sliders[i].setValue(1);
 						equalizer.setBand(i - 1, 0.0f);
 						player.setEqualizer(equalizer);
 					}

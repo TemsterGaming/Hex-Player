@@ -9,7 +9,7 @@ import java.awt.event.MouseMotionListener;
 
 public class Slider extends Panel implements MouseListener, MouseMotionListener
 {
-	private float progress;
+	private float value;
 	private float total;
 	private boolean dragging;
 	private boolean clicked;
@@ -21,7 +21,7 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 	public Slider()
 	{
 		outline = 0;
-		progress = 0;
+		value = 0;
 		total = 100;
 		setBackground(Color.black);
 		addMouseListener(this);
@@ -40,17 +40,17 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 		g.setColor(sliderColor);
 		if(vertical)
 		{
-			g.fillRect(outline, getHeight() - (int) (progress / total * getHeight()) + outline, getWidth() - (outline * 2), (int) (progress / total * getHeight()) - (outline * 2));
+			g.fillRect(outline, getHeight() - (int) (value / total * getHeight()) + outline, getWidth() - (outline * 2), (int) (value / total * getHeight()) - (outline * 2));
 		}
 		else
 		{
-			g.fillRect(outline, outline, (int) (progress / total * getWidth()) - (outline * 2), getHeight() - (outline * 2));
+			g.fillRect(outline, outline, (int) (value / total * getWidth()) - (outline * 2), getHeight() - (outline * 2));
 		}
 	}
 
-	public void setProgress(float progress)
+	public void setValue(float value)
 	{
-		this.progress = progress;
+		this.value = value;
 		repaint();
 	}
 
@@ -65,9 +65,9 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 		dragging = false;
 	}
 
-	public float getProgress()
+	public float getValue()
 	{
-		return progress;
+		return value;
 	}
 
 	public boolean isDragging()
@@ -116,19 +116,19 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 			{
 				if(vertical)
 				{
-					progress = (getHeight() - e.getY()) * (total / getHeight());
+					value = (getHeight() - e.getY()) * (total / getHeight());
 				}
 				else
 				{
-					progress = e.getX() * (total / getWidth());
+					value = e.getX() * (total / getWidth());
 				}
-				if(progress > total)
+				if(value > total)
 				{
-					progress = total;
+					value = total;
 				}
-				else if(progress < 0)
+				else if(value < 0)
 				{
-					progress = 0;
+					value = 0;
 				}
 			}
 			repaint();
@@ -157,19 +157,19 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 		{
 			if(vertical)
 			{
-				progress = (getHeight() - e.getY()) * (total / getHeight());
+				value = (getHeight() - e.getY()) * (total / getHeight());
 			}
 			else
 			{
-				progress = e.getX() * (total / getWidth());
+				value = e.getX() * (total / getWidth());
 			}
-			if(progress > total)
+			if(value > total)
 			{
-				progress = total;
+				value = total;
 			}
-			else if(progress < 0)
+			else if(value < 0)
 			{
-				progress = 0;
+				value = 0;
 			}
 		}
 		repaint();
