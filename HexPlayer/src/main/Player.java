@@ -556,6 +556,11 @@ public class Player
 		ap.setGain(gain);
 	}
 	
+	public float getGain()
+	{
+		return gain;
+	}
+	
 	/**
 	 * @param vol 0 = 0%, 1 = 100%
 	 */

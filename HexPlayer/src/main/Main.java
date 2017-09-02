@@ -5,7 +5,6 @@
 
 package main;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -26,9 +25,17 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import javax.imageio.ImageIO;
 
@@ -69,23 +76,24 @@ public class Main
 		}
 	};
 
-	VolumeChanger volChanger;
-	Frame frame;
-	Panel mainPanel;
-	ButtonPanel buttons;
-	SongPanel songPanel;
-	Slider slider;
+	private VolumeChanger volChanger;
+	private static Frame frame;
+	private static Panel mainPanel;
+	private static ButtonPanel buttons;
+	private static SongPanel songPanel;
+	private Slider slider;
 	private Player player;
 	private List[] playlistListMenu;
 	private static TextField playlistNameField;
-	private static BufferedImage[] buttonPng = new BufferedImage[7];
-	private static TImageButton tPlay, tPause, tStop, tNext, tPrev, tLoop, shuffle;
+	private static BufferedImage[] buttonPng = new BufferedImage[8];
+	private static TImageButton tPlay, tPause, tStop, tNext, tPrev, tLoop, shuffle, equalizerButton;
 	private static List songList, playlistList, playlistNewList, deleteConfirmMenu;
 	private File[] files;
 	private static int[] textScroll;
 	private File[] playlistFiles;
 	private TPlaylist[] playlist;
 	private File dir, playlistDir;
+	private File eqFile;
 	private int selectedForDeletion;
 	private static boolean frameReady = false;
 
@@ -96,7 +104,7 @@ public class Main
 
 	public Main()
 	{
-		frame = new Frame("Hex Player v2.1");
+		frame = new Frame("Hex Player v2.2");
 		mainPanel = new Panel();
 		init();
 		volChanger = new VolumeChanger();
@@ -116,6 +124,7 @@ public class Main
 		{
 			public void windowClosing(WindowEvent windowevent)
 			{
+				volChanger.updateEqFile();
 				System.exit(0);
 			}
 		});
@@ -163,6 +172,15 @@ public class Main
 		}
 
 		files = dir.listFiles(mp3Filter);
+		eqFile = new File(dir.getPath() + "/equalizer.eq");
+		try
+		{
+			eqFile.createNewFile();
+		}
+		catch(IOException e2)
+		{
+			e2.printStackTrace();
+		}
 
 		try
 		{
@@ -173,6 +191,7 @@ public class Main
 			buttonPng[4] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("loop.png"));
 			buttonPng[5] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("shuffle.png"));
 			buttonPng[6] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("pause.png"));
+			buttonPng[7] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("eq.png"));
 		}
 		catch(IOException e)
 		{
@@ -191,6 +210,7 @@ public class Main
 		tLoop = new TImageButton(0, 0, 45, 45, buttonPng[4], null, Color.black);
 		shuffle = new TImageButton(0, 0, 45, 45, buttonPng[5], null, Color.black);
 		tPause = new TImageButton(0, 0, 45, 45, buttonPng[6], null, Color.black);
+		equalizerButton = new TImageButton(0, 0, 45, 45, buttonPng[7], null, Color.black);
 
 		// Setting up player
 		System.out.println("Starting Player");
@@ -367,6 +387,7 @@ public class Main
 			tLoop.drawButton(g);
 			shuffle.drawButton(g);
 			tPause.drawButton(g);
+			equalizerButton.drawButton(g);
 		}
 
 		public void setButtonLocation()
@@ -378,6 +399,7 @@ public class Main
 			tPrev.setLocation(0, getWidth() * 4);
 			tNext.setLocation(0, getWidth() * 5);
 			shuffle.setLocation(0, getWidth() * 6);
+			equalizerButton.setLocation(0, getWidth() * 7);
 		}
 
 		public void setButtonSize()
@@ -389,13 +411,14 @@ public class Main
 			tNext.setSize(getWidth(), getWidth());
 			shuffle.setSize(getWidth(), getWidth());
 			tPause.setSize(getWidth(), getWidth());
+			equalizerButton.setSize(getWidth(), getWidth());
 		}
 
 		public void resizePanel(int width, int height)
 		{
-			if(width * 7 > height)
+			if(width * 8 > height)
 			{
-				setSize(height / 7, height);
+				setSize(height / 8, height);
 			}
 			else
 			{
@@ -412,6 +435,7 @@ public class Main
 			tLoop.buttonPressed(e.getX(), e.getY());
 			shuffle.buttonPressed(e.getX(), e.getY());
 			tPause.buttonPressed(e.getX(), e.getY());
+			equalizerButton.buttonPressed(e.getX(), e.getY());
 		}
 
 		public void mouseReleased(MouseEvent e)
@@ -430,6 +454,8 @@ public class Main
 				player.toggleShuffle();
 			if(tPause.buttonReleased(e.getX(), e.getY()))
 				player.pauseSong();
+			if(equalizerButton.buttonReleased(e.getX(), e.getY()))
+				volChanger.setVisible(true);
 		}
 
 		public void mouseClicked(MouseEvent e)
@@ -763,16 +789,26 @@ public class Main
 		{
 			volFrame.pack();
 			volFrame.setSize(600, 400);
+			volFrame.addWindowListener(new WindowAdapter()
+			{
+				public void windowClosing(WindowEvent windowevent)
+				{
+					setVisible(false);
+				}
+			});
 			volFrame.addComponentListener(new ComponentAdapter()
 			{
 				public void componentResized(ComponentEvent e)
 				{
-					for(int i = 0; i < sliders.length; i++)
+					if(volFrame.isVisible())
 					{
-						sliders[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), 0);
-						sliders[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), volPanel.getHeight() - 20);
-						toggles[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), volPanel.getHeight() - 20);
-						toggles[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), 20);
+						for(int i = 0; i < sliders.length; i++)
+						{
+							sliders[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), 0);
+							sliders[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), volPanel.getHeight() - 20);
+							toggles[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), volPanel.getHeight() - 20);
+							toggles[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), 20);
+						}
 					}
 				}
 			});
@@ -802,7 +838,99 @@ public class Main
 			sliders[0].setTotal(1);
 			sliders[0].setValue(0.10f);
 			player.setVolume(0.10f);
-			volFrame.setVisible(true);
+			readEqFile();
+		}
+
+		public void readEqFile()
+		{
+			try
+			{
+				BufferedReader bIn = new BufferedReader(new InputStreamReader(new FileInputStream(eqFile), StandardCharsets.UTF_8));
+				for(int i = 0; i < sliders.length; i++)
+				{
+					String boolString = bIn.readLine();
+					if(boolString != null && boolString.toLowerCase().equals("false"))
+					{
+						toggles[i].setState(false);
+					}
+					else
+					{
+						toggles[i].setState(true);
+					}
+					String valueString = bIn.readLine();
+					float value;
+					if(valueString == null)
+					{
+						if(i == 0)
+						{
+							value = 0.10f;
+						}
+						else
+						{
+							value = 1f;
+						}
+					}
+					else
+					{
+						value = Float.valueOf(valueString);
+					}
+					sliders[i].setValue(value);
+					if(i == 0)
+					{
+						if(toggles[i].getState())
+						{
+							player.setGain(value);
+						}
+						else
+						{
+							player.setVolume(0f);
+						}
+					}
+					else
+					{
+						if(toggles[i].getState())
+						{
+							equalizer.setBand(i - 1, value-1);
+							player.setEqualizer(equalizer);
+						}
+						else
+						{
+							equalizer.setBand(i - 1, 0.0f);
+							player.setEqualizer(equalizer);
+						}
+					}
+				}
+				bIn.close();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		public void updateEqFile()
+		{
+			try
+			{
+				BufferedWriter bOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(eqFile), StandardCharsets.UTF_8));
+				for(int i = 0; i < sliders.length; i++)
+				{
+					bOut.write(String.valueOf(toggles[i].getState()));
+					bOut.newLine();
+					bOut.write(String.valueOf(sliders[i].getValue()));
+					bOut.newLine();
+				}
+				bOut.close();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		public void setVisible(boolean bool)
+		{
+			volFrame.setVisible(bool);
 		}
 
 		public void mouseClicked(MouseEvent e)
