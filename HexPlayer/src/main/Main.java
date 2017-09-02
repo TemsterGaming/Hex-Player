@@ -879,7 +879,7 @@ public class Main
 					{
 						if(toggles[i].getState())
 						{
-							player.setGain(value);
+							player.setVolume(value);
 						}
 						else
 						{
