@@ -27,7 +27,7 @@ import org.jaudiotagger.tag.images.Images;
 public class Player
 {
 	private boolean playing, songPopup, shuffle, paused;
-	boolean seekable;
+	private boolean seekable;
 	private File[] files;
 	private int songNum = 0, popupTimer = 0, id = 0, selectedSong;
 	private Random rando = new Random();
@@ -45,6 +45,8 @@ public class Player
 	private PlayerTimer timer;
 	private float gain;
 	private Equalizer equalizer;
+	private static BufferedImage[] shuffleIcon = new BufferedImage[2];
+	private static BufferedImage[] repeatIcon = new BufferedImage[2];
 
 	public Player(File[] file)
 	{
@@ -68,6 +70,10 @@ public class Player
 		try
 		{
 			noArt = ImageIO.read(getClass().getClassLoader().getResourceAsStream("noArt.png"));
+			shuffleIcon[0] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("shuffleOff.png"))).size(20, 20).asBufferedImage();
+			shuffleIcon[1] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("shuffleOn.png"))).size(20, 20).asBufferedImage();
+			repeatIcon[0] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("repeatOff.png"))).size(20, 20).asBufferedImage();
+			repeatIcon[1] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("repeatOn.png"))).size(20, 20).asBufferedImage();
 		}
 		catch(IOException e)
 		{
@@ -406,6 +412,30 @@ public class Player
 			return resizedArtwork;
 		}
 	}
+	
+	public BufferedImage getShuffleIcon()
+	{
+		if(isShuffle())
+		{
+			return shuffleIcon[1];
+		}
+		else
+		{
+			return shuffleIcon[0];
+		}
+	}
+	
+	public BufferedImage getRepeatIcon()
+	{
+		if(isRepeat())
+		{
+			return repeatIcon[1];
+		}
+		else
+		{
+			return repeatIcon[0];
+		}
+	}
 
 	public void updateSelectedSongTags()
 	{
@@ -465,6 +495,16 @@ public class Player
 		{
 			artwork = noArt;
 		}
+	}
+	
+	public boolean isShuffle()
+	{
+		return shuffle;
+	}
+	
+	public boolean isRepeat()
+	{
+		return listener.loop;
 	}
 
 	public int getID()
