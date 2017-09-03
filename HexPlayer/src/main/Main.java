@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -583,6 +582,8 @@ public class Main
 				}
 				buffer.drawString(player.getFormattedDuration(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 2, (int) (getHeight() / 3) - 5);
 				buffer.drawImage(player.getResizedArtwork(getHeight() / 3, getHeight() / 3), getWidth() - (getHeight() / 3), 0, getHeight() / 3, getHeight() / 3, null);
+				buffer.drawImage(player.getShuffleIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 25, (int) (getHeight() / 3) - 23,null);
+				buffer.drawImage(player.getRepeatIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 50, (int) (getHeight() / 3) - 23,null);
 				if(player.isPopup())
 				{
 					buffer.drawString(player.getSelectedSongName(), 5, (int) (getHeight() / 3) - 10);
