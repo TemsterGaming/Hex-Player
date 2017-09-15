@@ -46,10 +46,10 @@ import misc.ToggleButton;
 public class Main
 {
 	FilenameFilter mp3Filter = new FilenameFilter() // Used to filter out
-	{											   // files/folders that don't
-		public boolean accept(File f, String s)	  // end in ".mp3"
+	{ // files/folders that
+		public boolean accept(File f, String s) // don't end in ".mp3"
 		{
-			if(s.endsWith(".mp3"))
+			if (s.endsWith(".mp3"))
 			{
 				return true;
 			}
@@ -61,10 +61,10 @@ public class Main
 	};
 
 	FilenameFilter plFilter = new FilenameFilter() // Used to filter out
-	{											  // files/folders that don't
-		public boolean accept(File f, String s)  // end in ".pl"
+	{ // files/folders that
+		public boolean accept(File f, String s) // don't end in ".pl"
 		{
-			if(s.endsWith(".pl"))
+			if (s.endsWith(".pl"))
 			{
 				return true;
 			}
@@ -75,8 +75,8 @@ public class Main
 		}
 	};
 
-	private VolumeChanger volChanger;
-	private static Frame frame;
+	private VolumeChanger volChanger; // equalizer/volume window
+	private static Frame frame; // main window
 	private static Panel mainPanel;
 	private static ButtonPanel buttons;
 	private static SongPanel songPanel;
@@ -103,7 +103,7 @@ public class Main
 
 	public Main()
 	{
-		frame = new Frame("Hex Player v2.3");
+		frame = new Frame("Hex Player v2.5");
 		mainPanel = new Panel();
 		init();
 		volChanger = new VolumeChanger();
@@ -115,7 +115,7 @@ public class Main
 		{
 			frame.setIconImage(ImageIO.read(getClass().getClassLoader().getResource("icon.png")));
 		}
-		catch(IOException e2)
+		catch (IOException e2)
 		{
 			e2.printStackTrace();
 		}
@@ -142,28 +142,28 @@ public class Main
 			String dirString = "Songs";
 			System.out.println("Setting Directory to: " + dirString);
 			dir = new File(dirString);
-			if(!dir.exists())
+			if (!dir.exists())
 			{
 				System.out.println("Songs Folder Not Found, Trying Test Folder");
 				dirString = "V:/Songs";
 				dir = new File(dirString);
-				if(!dir.exists())
+				if (!dir.exists())
 				{
 					System.exit(0);
 				}
 			}
 			playlistDir = new File(dirString + "/Playlists");
-			if(!playlistDir.exists())
+			if (!playlistDir.exists())
 			{
 				playlistDir.mkdir();
 			}
 		}
-		catch(java.lang.NullPointerException e)
+		catch (java.lang.NullPointerException e)
 		{
 			System.err.println("ERROR! Directory Not Found!");
 			System.exit(0);
 		}
-		catch(java.security.AccessControlException e)
+		catch (java.security.AccessControlException e)
 		{
 			System.err.println("ERROR! Access Denied!");
 			System.err.println("Either move the program to that directory or choose another directory");
@@ -176,7 +176,7 @@ public class Main
 		{
 			eqFile.createNewFile();
 		}
-		catch(IOException e2)
+		catch (IOException e2)
 		{
 			e2.printStackTrace();
 		}
@@ -192,11 +192,11 @@ public class Main
 			buttonPng[6] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("pause.png"));
 			buttonPng[7] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("eq.png"));
 		}
-		catch(IOException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		catch(NullPointerException e1)
+		catch (NullPointerException e1)
 		{
 			e1.printStackTrace();
 			System.exit(0);
@@ -237,7 +237,7 @@ public class Main
 		{
 			Thread.sleep(1000 / num);
 		}
-		catch(InterruptedException e)
+		catch (InterruptedException e)
 		{
 			System.err.println("Sleep Exception");
 		}
@@ -248,12 +248,12 @@ public class Main
 		playlistFiles = playlistDir.listFiles(plFilter);
 		playlist = new TPlaylist[playlistDir.listFiles(plFilter).length];
 		playlistListMenu = new List[playlistDir.listFiles(plFilter).length];
-		for(int i = 0; i < playlist.length; i++)
+		for (int i = 0; i < playlist.length; i++)
 		{
 			playlist[i] = new TPlaylist(playlistDir.listFiles(plFilter)[i], false);
 			playlistListMenu[i] = new List();
 			playlistListMenu[i].add("/Back/");
-			for(int a = 0; a < playlist[i].getSongCount(); a++)
+			for (int a = 0; a < playlist[i].getSongCount(); a++)
 			{
 				playlistListMenu[i].add(playlist[i].getSongNames()[a]);
 			}
@@ -263,14 +263,14 @@ public class Main
 
 		playlistList.removeAll();
 		playlistList.add("/Back/");
-		for(File i : playlistFiles)
+		for (File i : playlistFiles)
 		{
 			playlistList.add(i.getName());
 		}
 		playlistList.add("/Add/");
 		playlistList.add("/Reload/");
 
-		for(int i = 0; i < playlistListMenu.length; i++)
+		for (int i = 0; i < playlistListMenu.length; i++)
 		{
 			songPanel.add(playlistListMenu[i]);
 			playlistListMenu[i].addItemListener(songPanel);
@@ -282,9 +282,9 @@ public class Main
 	public void createPlaylist()
 	{
 		TPlaylist newPlaylist = new TPlaylist(new File(playlistDir.getPath() + "/" + playlistNameField.getText() + ".pl"), true);
-		for(int i = 1; i < playlistNewList.getItemCount() - 1; i++)
+		for (int i = 1; i < playlistNewList.getItemCount() - 1; i++)
 		{
-			if(playlistNewList.isIndexSelected(i))
+			if (playlistNewList.isIndexSelected(i))
 			{
 				System.out.println("Adding " + playlistNewList.getItem(i));
 				newPlaylist.addFile(playlistNewList.getItem(i));
@@ -298,23 +298,23 @@ public class Main
 
 	public void setUI(Component ui)
 	{
-		if(songList.isVisible())
+		if (songList.isVisible())
 			songList.setVisible(false);
-		if(playlistList.isVisible())
+		if (playlistList.isVisible())
 			playlistList.setVisible(false);
-		if(playlistNewList.isVisible())
+		if (playlistNewList.isVisible())
 			playlistNewList.setVisible(false);
-		if(playlistNameField.isVisible())
+		if (playlistNameField.isVisible())
 			playlistNameField.setVisible(false);
-		if(deleteConfirmMenu.isVisible())
+		if (deleteConfirmMenu.isVisible())
 			deleteConfirmMenu.setVisible(false);
-		for(int i = 0; i < playlistListMenu.length - 1; i++)
+		for (int i = 0; i < playlistListMenu.length - 1; i++)
 		{
-			if(playlistListMenu[i].isVisible())
+			if (playlistListMenu[i].isVisible())
 				playlistListMenu[i].setVisible(false);
 		}
 		ui.setVisible(true);
-		if(ui == playlistNewList)
+		if (ui == playlistNewList)
 		{
 			playlistNameField.setVisible(true);
 		}
@@ -322,9 +322,9 @@ public class Main
 
 	public void deselectAll(List list)
 	{
-		if(list.isMultipleMode())
+		if (list.isMultipleMode())
 		{
-			for(int i = 0; i < list.getItemCount(); i++)
+			for (int i = 0; i < list.getItemCount(); i++)
 			{
 				list.deselect(i);
 			}
@@ -415,7 +415,7 @@ public class Main
 
 		public void resizePanel(int width, int height)
 		{
-			if(width * 8 > height)
+			if (width * 8 > height)
 			{
 				setSize(height / 8, height);
 			}
@@ -439,21 +439,29 @@ public class Main
 
 		public void mouseReleased(MouseEvent e)
 		{
-			if(tPlay.buttonReleased(e.getX(), e.getY()))
+			if (tPlay.buttonReleased(e.getX(), e.getY()))
 				player.playSelectedSong();
-			if(tNext.buttonReleased(e.getX(), e.getY()))
+			if (tNext.buttonReleased(e.getX(), e.getY()))
 				player.nextSong();
-			if(tPrev.buttonReleased(e.getX(), e.getY()))
-				player.prevSong();
-			if(tStop.buttonReleased(e.getX(), e.getY()))
+			if (tPrev.buttonReleased(e.getX(), e.getY()))
+				if (player.getCurrentMillis() < 5000)
+				{
+					player.prevSong();
+				}
+				else
+				{
+					player.stopSong();
+					player.playSong();
+				}
+			if (tStop.buttonReleased(e.getX(), e.getY()))
 				player.stopSong();
-			if(tLoop.buttonReleased(e.getX(), e.getY()))
+			if (tLoop.buttonReleased(e.getX(), e.getY()))
 				player.toggleLoop();
-			if(shuffle.buttonReleased(e.getX(), e.getY()))
+			if (shuffle.buttonReleased(e.getX(), e.getY()))
 				player.toggleShuffle();
-			if(tPause.buttonReleased(e.getX(), e.getY()))
+			if (tPause.buttonReleased(e.getX(), e.getY()))
 				player.pauseSong();
-			if(equalizerButton.buttonReleased(e.getX(), e.getY()))
+			if (equalizerButton.buttonReleased(e.getX(), e.getY()))
 				volChanger.setVisible(true);
 		}
 
@@ -470,7 +478,7 @@ public class Main
 		}
 	}
 
-	public class SongPanel extends Panel implements ActionListener, ItemListener, MouseListener
+	public class SongPanel extends Panel implements ActionListener, ItemListener, MouseListener, MouseMotionListener
 	{
 		Graphics buffer;
 		BufferedImage offscreen;
@@ -489,7 +497,7 @@ public class Main
 			deleteConfirmMenu = new List();
 			playlistNameField = new TextField();
 			playlistNewList.add("/Cancel/");
-			for(File i : files) // Add songs to choice menu
+			for (File i : files) // Add songs to choice menu
 			{
 				songList.add(i.getName());
 				playlistNewList.add(i.getName());
@@ -531,24 +539,24 @@ public class Main
 			{
 				public void run()
 				{
-					while(true)
+					while (true)
 					{
 						textScroll[0]--;
 						textScroll[1]--;
-						if((textScroll[0] == 0 && getStringLength(player.getCurrentSong()) + 10 < getWidth() - (getHeight() / 3))
+						if ((textScroll[0] == 0 && getStringLength(player.getCurrentSong()) + 10 < getWidth() - (getHeight() / 3))
 								|| (textScroll[1] < -getStringLength(player.getCurrentSong()) && getStringLength(player.getCurrentSong()) + 10 > getWidth() - (getHeight() / 3)))
 						{
 							textScroll[1] = getWidth() - (getHeight() / 3);
 						}
-						if((textScroll[1] == 0 && getStringLength(player.getCurrentSong()) + 10 < getWidth() - (getHeight() / 3))
+						if ((textScroll[1] == 0 && getStringLength(player.getCurrentSong()) + 10 < getWidth() - (getHeight() / 3))
 								|| (textScroll[0] < -getStringLength(player.getCurrentSong()) && getStringLength(player.getCurrentSong()) + 10 > getWidth() - (getHeight() / 3)))
 						{
 							textScroll[0] = getWidth() - (getHeight() / 3);
 						}
-						if(player.canSeek())
+						if (player.canSeek())
 						{
 							slider.setTotal(player.getTotalDuration() * 1000);
-							if(!slider.isDragging())
+							if (!slider.isDragging())
 							{
 								slider.setValue(player.getCurrentMillis());
 							}
@@ -568,7 +576,7 @@ public class Main
 		public void paint(Graphics g)
 		{
 			super.paint(buffer);
-			if(frameReady)
+			if (frameReady)
 			{
 				setUILocation();
 				setUISize();
@@ -576,15 +584,25 @@ public class Main
 				buffer.fillRect(0, 0, getWidth(), getHeight());
 				buffer.setColor(Color.WHITE);
 				buffer.drawString(player.getCurrentSong(), textScroll[0], (int) (getHeight() / 6));
-				if(buffer.getFontMetrics().stringWidth(player.getCurrentSong()) + 10 < getWidth())
+				if (buffer.getFontMetrics().stringWidth(player.getCurrentSong()) + 10 < getWidth())
 				{
 					buffer.drawString(player.getCurrentSong(), textScroll[1], (int) (getHeight() / 6));
 				}
-				buffer.drawString(player.getFormattedDuration(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 2, (int) (getHeight() / 3) - 5);
+				if (!slider.isDragging())
+				{
+					buffer.drawString(player.formatDuration(player.getCurrentMillis()), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 2, (int) (getHeight() / 3) - 5);
+				}
+				else
+				{
+					if (slider.getValue() / 1000 % 60 > 9) // prints an extra 0 in seconds if the seconds
+					{
+						buffer.drawString(player.formatDuration((int)slider.getValue()), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 2, (int) (getHeight() / 3) - 5);
+					}
+				}
 				buffer.drawImage(player.getResizedArtwork(getHeight() / 3, getHeight() / 3), getWidth() - (getHeight() / 3), 0, getHeight() / 3, getHeight() / 3, null);
-				buffer.drawImage(player.getShuffleIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 25, (int) (getHeight() / 3) - 23,null);
-				buffer.drawImage(player.getRepeatIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.getFormattedDuration()) - 50, (int) (getHeight() / 3) - 23,null);
-				if(player.isPopup())
+				buffer.drawImage(player.getShuffleIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 25, (int) (getHeight() / 3) - 23, null);
+				buffer.drawImage(player.getRepeatIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 50, (int) (getHeight() / 3) - 23, null);
+				if (player.isPopup())
 				{
 					buffer.drawString(player.getSelectedSongName(), 5, (int) (getHeight() / 3) - 10);
 				}
@@ -601,7 +619,7 @@ public class Main
 			playlistNameField.setLocation(0, getHeight() / 3);
 			deleteConfirmMenu.setLocation(0, getHeight() / 3);
 			playlistNewList.setLocation(0, (getHeight() / 3) + (getHeight() / 15));
-			for(int i = 0; i < playlistListMenu.length; i++)
+			for (int i = 0; i < playlistListMenu.length; i++)
 			{
 				playlistListMenu[i].setLocation(0, getHeight() / 3);
 			}
@@ -615,25 +633,24 @@ public class Main
 			deleteConfirmMenu.setSize(getWidth(), getHeight() - (getHeight() / 3));
 			playlistNameField.setSize(getWidth(), (getHeight() / 15));
 			playlistNewList.setSize(getWidth(), getHeight() - (getHeight() / 3) - (getHeight() / 15));
-			for(int i = 0; i < playlistListMenu.length; i++)
+			for (int i = 0; i < playlistListMenu.length; i++)
 			{
 				playlistListMenu[i].setSize(getWidth(), getHeight() - (getHeight() / 3));
 			}
 			slider.setSize(getWidth() - (getHeight() / 3) - 10, 20);
 		}
 
-		public int getStringLength(String text) // Gets the pixel width of a
-												 // string
+		public int getStringLength(String text) // Gets the pixel width of a string
 		{
 			return buffer.getFontMetrics().stringWidth(text);
 		}
 
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getSource() == songList && songList.getSelectedIndex() < songList.getItemCount() - 1)
+			if (e.getSource() == songList && songList.getSelectedIndex() < songList.getItemCount() - 1)
 			{
 				player.stopSong();
-				if(player.getID() != 0)
+				if (player.getID() != 0)
 				{
 					player = new Player(files);
 					player.selectSong(songList.getSelectedIndex());
@@ -641,12 +658,12 @@ public class Main
 				player.playSelectedSong();
 			}
 
-			for(int i = 0; i < playlistListMenu.length; i++)
+			for (int i = 0; i < playlistListMenu.length; i++)
 			{
-				if(e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedIndex() > 0)
+				if (e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedIndex() > 0)
 				{
 					player.stopSong();
-					if(player.getID() != i + 1)
+					if (player.getID() != i + 1)
 					{
 						player = new Player(playlist[i].getSongFiles(), i + 1);
 					}
@@ -658,69 +675,69 @@ public class Main
 
 		public void itemStateChanged(ItemEvent e)
 		{
-			if(e.getSource() == songList && songList.getSelectedIndex() < songList.getItemCount() - 1 && player.getID() == 0)
+			if (e.getSource() == songList && songList.getSelectedIndex() < songList.getItemCount() - 1 && player.getID() == 0)
 			{
 				player.selectSong(songList.getSelectedIndex());
 			}
-			else if(e.getSource() == songList && songList.getSelectedIndex() == songList.getItemCount() - 1)
+			else if (e.getSource() == songList && songList.getSelectedIndex() == songList.getItemCount() - 1)
 			{
 				deselectAll(songList);
 				setUI(playlistList);
 			}
 
-			if(e.getSource() == playlistList)
+			if (e.getSource() == playlistList)
 			{
-				if(playlistList.getSelectedItem().equals("/Back/"))
+				if (playlistList.getSelectedItem().equals("/Back/"))
 				{
 					deselectAll(playlistList);
 					setUI(songList);
 				}
-				else if(playlistList.getSelectedIndex() < playlistList.getItemCount() - 2)
+				else if (playlistList.getSelectedIndex() < playlistList.getItemCount() - 2)
 				{
 					setUI(playlistListMenu[playlistList.getSelectedIndex() - 1]);
 					deselectAll(playlistList);
 				}
-				else if(playlistList.getSelectedItem().equals("/Reload/"))
+				else if (playlistList.getSelectedItem().equals("/Reload/"))
 				{
 					reloadPlaylists();
 				}
-				else if(playlistList.getSelectedItem().equals("/Add/"))
+				else if (playlistList.getSelectedItem().equals("/Add/"))
 				{
 					deselectAll(playlistList);
 					setUI(playlistNewList);
 				}
 			}
 
-			for(int i = 0; i < playlistListMenu.length; i++)
+			for (int i = 0; i < playlistListMenu.length; i++)
 			{
-				if(e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedIndex() > 0 && player.getID() == i + 1)
+				if (e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedIndex() > 0 && player.getID() == i + 1)
 				{
 					player.selectSong(playlistListMenu[i].getSelectedIndex() - 1);
 					player.startPopup();
 				}
 			}
 
-			if(e.getSource() == playlistNewList)
+			if (e.getSource() == playlistNewList)
 			{
-				if(playlistNewList.isIndexSelected(0))
+				if (playlistNewList.isIndexSelected(0))
 				{
 					deselectAll(playlistNewList);
 					setUI(playlistList);
 				}
-				else if(playlistNewList.isIndexSelected(playlistNewList.getItemCount() - 1))
+				else if (playlistNewList.isIndexSelected(playlistNewList.getItemCount() - 1))
 				{
 					createPlaylist();
 				}
 			}
 
-			for(int i = 0; i < playlistListMenu.length; i++)
+			for (int i = 0; i < playlistListMenu.length; i++)
 			{
-				if(e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedItem().equals("/Back/"))
+				if (e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedItem().equals("/Back/"))
 				{
 					deselectAll(playlistListMenu[i]);
 					setUI(playlistList);
 				}
-				else if(e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedItem().equals("/Delete/"))
+				else if (e.getSource() == playlistListMenu[i] && playlistListMenu[i].getSelectedItem().equals("/Delete/"))
 				{
 					deselectAll(playlistListMenu[i]);
 					prepareDeletion(i);
@@ -728,16 +745,16 @@ public class Main
 				}
 			}
 
-			if(e.getSource() == deleteConfirmMenu)
+			if (e.getSource() == deleteConfirmMenu)
 			{
-				if(deleteConfirmMenu.getSelectedIndex() == 1)
+				if (deleteConfirmMenu.getSelectedIndex() == 1)
 				{
 					playlistFiles[selectedForDeletion].delete();
 					reloadPlaylists();
 					deselectAll(deleteConfirmMenu);
 					setUI(playlistList);
 				}
-				else if(deleteConfirmMenu.getSelectedIndex() == 2)
+				else if (deleteConfirmMenu.getSelectedIndex() == 2)
 				{
 					deselectAll(deleteConfirmMenu);
 					setUI(playlistList);
@@ -755,7 +772,7 @@ public class Main
 
 		public void mouseReleased(MouseEvent e)
 		{
-			if(player.isPlaying())
+			if (player.isPlaying())
 			{
 				player.stopSong();
 				player.playSongAtTime((int) slider.getValue() / 26);
@@ -770,6 +787,16 @@ public class Main
 		public void mouseExited(MouseEvent e)
 		{
 		}
+
+		@Override
+		public void mouseDragged(MouseEvent arg0)
+		{
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent arg0)
+		{
+		}
 	}
 
 	public class VolumeChanger implements MouseListener, MouseMotionListener
@@ -777,7 +804,7 @@ public class Main
 		private Frame volFrame;
 		private Panel volPanel;
 		private Slider[] sliders = new Slider[33];
-		private ToggleButton[] toggles = new ToggleButton[33];
+		private ToggleButton[] toggles = new ToggleButton[2];
 		private Equalizer equalizer;
 
 		public VolumeChanger()
@@ -801,15 +828,17 @@ public class Main
 			{
 				public void componentResized(ComponentEvent e)
 				{
-					if(volFrame.isVisible())
+					if (volFrame.isVisible())
 					{
-						for(int i = 0; i < sliders.length; i++)
+						for (int i = 0; i < sliders.length; i++)
 						{
 							sliders[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), 0);
 							sliders[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), volPanel.getHeight() - 20);
-							toggles[i].setLocation((int) (float) (((float) volPanel.getWidth() / (float) sliders.length) * i), volPanel.getHeight() - 20);
-							toggles[i].setSize((int) (float) ((float) volPanel.getWidth() / 32), 20);
 						}
+						toggles[0].setLocation(0, volPanel.getHeight() - 20);
+						toggles[0].setSize((int) (float) ((float) volPanel.getWidth() / 32), 20);
+						toggles[1].setLocation((int) (float) ((float) volPanel.getWidth() / (float) sliders.length), volPanel.getHeight() - 20);
+						toggles[1].setSize((int) (float) ((float) volPanel.getWidth() - (volPanel.getWidth() / 32)), 20);
 					}
 				}
 			});
@@ -818,19 +847,22 @@ public class Main
 			volPanel.setBackground(Color.black);
 			volFrame.add(volPanel);
 			equalizer = new Equalizer();
-			for(int i = 0; i < sliders.length; i++)
+			for (int i = 0; i < sliders.length; i++)
 			{
 				sliders[i] = new Slider(3);
 				volPanel.add(sliders[i]);
 				sliders[i].addMouseListener(this);
 				sliders[i].addMouseMotionListener(this);
 				sliders[i].setVertical(true);
-				if(i > 0)
+				if (i > 0)
 				{
 					sliders[i].setTotal(2);
 					sliders[i].setValue(1);
 					sliders[i].setLeftOnly(true);
 				}
+			}
+			for (int i = 0; i < toggles.length; i++)
+			{
 				toggles[i] = new ToggleButton(3);
 				toggles[i].setState(true);
 				volPanel.add(toggles[i]);
@@ -847,10 +879,10 @@ public class Main
 			try
 			{
 				BufferedReader bIn = new BufferedReader(new InputStreamReader(new FileInputStream(eqFile), StandardCharsets.UTF_8));
-				for(int i = 0; i < sliders.length; i++)
+				for (int i = 0; i < toggles.length; i++)
 				{
 					String boolString = bIn.readLine();
-					if(boolString != null && boolString.toLowerCase().equals("false"))
+					if (boolString != null && boolString.toLowerCase().equals("false"))
 					{
 						toggles[i].setState(false);
 					}
@@ -858,11 +890,14 @@ public class Main
 					{
 						toggles[i].setState(true);
 					}
+				}
+				for (int i = 0; i < sliders.length; i++)
+				{
 					String valueString = bIn.readLine();
 					float value;
-					if(valueString == null)
+					if (valueString == null)
 					{
-						if(i == 0)
+						if (i == 0)
 						{
 							value = 0.10f;
 						}
@@ -876,9 +911,9 @@ public class Main
 						value = Float.valueOf(valueString);
 					}
 					sliders[i].setValue(value);
-					if(i == 0)
+					if (i == 0)
 					{
-						if(toggles[i].getState())
+						if (toggles[0].getState())
 						{
 							player.setVolume(value);
 						}
@@ -889,9 +924,9 @@ public class Main
 					}
 					else
 					{
-						if(toggles[i].getState())
+						if (toggles[1].getState())
 						{
-							equalizer.setBand(i - 1, value-1);
+							equalizer.setBand(i - 1, value - 1);
 							player.setEqualizer(equalizer);
 						}
 						else
@@ -903,7 +938,7 @@ public class Main
 				}
 				bIn.close();
 			}
-			catch(IOException e)
+			catch (IOException e)
 			{
 				e.printStackTrace();
 			}
@@ -914,16 +949,19 @@ public class Main
 			try
 			{
 				BufferedWriter bOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(eqFile), StandardCharsets.UTF_8));
-				for(int i = 0; i < sliders.length; i++)
+				for (int i = 0; i < toggles.length; i++)
 				{
 					bOut.write(String.valueOf(toggles[i].getState()));
 					bOut.newLine();
+				}
+				for (int i = 0; i < sliders.length; i++)
+				{
 					bOut.write(String.valueOf(sliders[i].getValue()));
 					bOut.newLine();
 				}
 				bOut.close();
 			}
-			catch(IOException e)
+			catch (IOException e)
 			{
 				e.printStackTrace();
 			}
@@ -936,9 +974,9 @@ public class Main
 
 		public void mouseClicked(MouseEvent e)
 		{
-			if(e.getSource() == toggles[0])
+			if (e.getSource() == toggles[0])
 			{
-				if(toggles[0].getState())
+				if (toggles[0].getState())
 				{
 					player.setVolume(sliders[0].getValue());
 				}
@@ -947,16 +985,19 @@ public class Main
 					player.setVolume(0f);
 				}
 			}
-			for(int i = 1; i < toggles.length; i++)
+			else if (e.getSource() == toggles[1])
 			{
-				if(e.getSource() == toggles[i])
+				if (toggles[1].getState())
 				{
-					if(toggles[i].getState())
+					for (int i = 1; i < sliders.length; i++)
 					{
 						equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 						player.setEqualizer(equalizer);
 					}
-					else
+				}
+				else
+				{
+					for (int i = 1; i < sliders.length; i++)
 					{
 						equalizer.setBand(i - 1, 0.0f);
 						player.setEqualizer(equalizer);
@@ -971,20 +1012,20 @@ public class Main
 
 		public void mouseReleased(MouseEvent e)
 		{
-			if(e.getButton() == MouseEvent.BUTTON1)
+			if (e.getButton() == MouseEvent.BUTTON1)
 			{
-				if(e.getSource() == sliders[0])
+				if (e.getSource() == sliders[0])
 				{
 					player.setVolume(sliders[0].getValue());
 				}
 			}
-			for(int i = 1; i < sliders.length; i++)
+			for (int i = 1; i < sliders.length; i++)
 			{
-				if(e.getSource() == sliders[i])
+				if (e.getSource() == sliders[i])
 				{
-					if(e.getButton() == MouseEvent.BUTTON1)
+					if (e.getButton() == MouseEvent.BUTTON1)
 					{
-						if(toggles[i].getState())
+						if (toggles[1].getState())
 						{
 							equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 							player.setEqualizer(equalizer);
@@ -1014,23 +1055,23 @@ public class Main
 
 		public void mouseDragged(MouseEvent e)
 		{
-			if(e.getSource() == sliders[0])
+			if (e.getSource() == sliders[0])
 			{
-				if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
+				if (MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
 				{
 					player.setVolume(sliders[0].getValue());
 				}
 			}
-			for(int i = 1; i < sliders.length; i++)
+			for (int i = 1; i < sliders.length; i++)
 			{
-				if(e.getSource() == sliders[i])
+				if (e.getSource() == sliders[i])
 				{
-					if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
+					if (MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1"))
 					{
 						equalizer.setBand(i - 1, sliders[i].getValue() - 1);
 						player.setEqualizer(equalizer);
 					}
-					else if(MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button3"))
+					else if (MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button3"))
 					{
 						sliders[i].setValue(1);
 						equalizer.setBand(i - 1, 0.0f);

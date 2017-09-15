@@ -47,9 +47,14 @@ public class Player
 	private Equalizer equalizer;
 	private static BufferedImage[] shuffleIcon = new BufferedImage[2];
 	private static BufferedImage[] repeatIcon = new BufferedImage[2];
+	private static Thread songThread; // Thread that plays the song
+	private static Thread popupThread; // thread to display which song is selected
+	private static int startTime; // used to specify what time to start the song
+	private static boolean songReadyToPlay; // used to start the song
 
 	public Player(File[] file)
 	{
+		createThreads();
 		listener = new PBListener();
 		setFiles(file);
 		try
@@ -58,11 +63,11 @@ public class Player
 			ap = new AdvancedPlayer(sound);
 			ap.setPlayBackListener(listener);
 		}
-		catch(FileNotFoundException | JavaLayerException e)
+		catch (FileNotFoundException | JavaLayerException e)
 		{
 			e.printStackTrace();
 		}
-		catch(ArrayIndexOutOfBoundsException e)
+		catch (ArrayIndexOutOfBoundsException e)
 		{
 			System.err.println("ERROR! Can't select any files!");
 			e.getStackTrace();
@@ -75,7 +80,7 @@ public class Player
 			repeatIcon[0] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("repeatOff.png"))).size(20, 20).asBufferedImage();
 			repeatIcon[1] = Thumbnails.of(ImageIO.read(getClass().getClassLoader().getResourceAsStream("repeatOn.png"))).size(20, 20).asBufferedImage();
 		}
-		catch(IOException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -88,6 +93,8 @@ public class Player
 		timer.stopTimer();
 		gain = 0;
 		equalizer = new Equalizer();
+		songThread.start();
+		popupThread.start();
 	}
 
 	public Player(File[] file, int id)
@@ -95,34 +102,76 @@ public class Player
 		this(file);
 		this.id = id;
 	}
-	
-	public void playSongAtTime(int num)
+
+	private void createThreads()
 	{
-		if(!playing) // Used so it doesn't play the song again
-		{			 // and make the original unstoppable
-			new Thread(new Runnable()
+		popupThread = new Thread(new Runnable()
+		{
+			public void run()
 			{
-				public void run()
+				while (true)
 				{
-					try
+					while (songPopup && popupTimer < 300)
 					{
-						updateSong();
-						System.out.println("Playing Song");
-						playing = true;
-						paused = false;
-						timer.startTimer(num*26);
-						ap.setGain(gain);
-						ap.setEqualizer(equalizer);
-						ap.play(num,Integer.MAX_VALUE); // Thread pauses until song finishes
+						popupTimer++;
+						frameRate(60);
 					}
-					catch(Exception e)
+					stopPopup();
+					frameRate(60);
+				}
+			}
+		});
+
+		songThread = new Thread(new Runnable()
+		{
+			public void run()
+			{
+				while (true)
+				{
+					if (songReadyToPlay)
 					{
-						System.err.println("Error Playing Song!");
-						e.printStackTrace();
-						playing = false;
+						songReadyToPlay = false;
+						try
+						{
+							playing = true;
+							paused = false;
+							timer.startTimer(startTime * 26);
+							ap.setGain(gain);
+							ap.setEqualizer(equalizer);
+							ap.play(startTime, Integer.MAX_VALUE);
+							startTime = 0;
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error Playing Song!");
+							e.printStackTrace();
+							playing = false;
+						}
+					}
+					else
+					{
+						try
+						{
+							Thread.sleep(1);
+						}
+						catch (InterruptedException e)
+						{
+							e.printStackTrace();
+						}
 					}
 				}
-			}).start();
+			}
+		});
+	}
+
+	public void playSongAtTime(int num)
+	{
+		if (!playing) // used to avoid the player locking up if told to play while already playing
+		{
+			updateSong();
+			startTime = num;
+			System.out.println("Playing Song");
+			songReadyToPlay = true;
 		}
 		else
 		{
@@ -146,28 +195,28 @@ public class Player
 		files = file;
 	}
 
-	public void stopSong()
+	public void stopSong() // stops the song
 	{
 		System.out.println("Stopping Song");
 		try
 		{
 			ap.close();
 		}
-		catch(NullPointerException e)
+		catch (NullPointerException e)
 		{
 			e.printStackTrace();
 		}
 		playing = false;
-		if(timer != null)
+		if (timer != null)
 		{
 			stopTimer();
 		}
 		currentSongName = "No Song Playing";
 	}
 
-	public void pauseSong()
+	public void pauseSong() // guess what this method does ;)
 	{
-		if(!paused)
+		if (!paused)
 		{
 			System.out.println("Pausing Song");
 			paused = true;
@@ -175,7 +224,7 @@ public class Player
 			{
 				ap.stop();
 			}
-			catch(NullPointerException e)
+			catch (NullPointerException e)
 			{
 				e.printStackTrace();
 			}
@@ -185,33 +234,17 @@ public class Player
 		else
 		{
 			System.out.println("Resuming Song");
-			paused = false;
 			try
 			{
 				sound = new FileInputStream(files[songNum]);
 				ap = new AdvancedPlayer(sound);
 				ap.setPlayBackListener(listener);
 				updateCurrentSongTag();
-				new Thread(new Runnable()
-				{
-					public void run()
-					{
-						try
-						{
-							playing = true;
-							timer.resumeTimer();
-							ap.setGain(gain);
-							ap.setEqualizer(equalizer);
-							ap.play(timer.getMilliseconds() / 26, Integer.MAX_VALUE);
-						}
-						catch(JavaLayerException e)
-						{
-							System.err.println("Error Playing Song");
-						}
-					}
-				}).start();
+				timer.resumeTimer();
+				startTime = timer.getMilliseconds() / 26;
+				songReadyToPlay = true;
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				System.err.println("Error Resuming Song");
 				e.printStackTrace();
@@ -234,28 +267,28 @@ public class Player
 			ap.setPlayBackListener(listener);
 			updateCurrentSongTag();
 		}
-		catch(IOException | JavaLayerException e)
+		catch (IOException | JavaLayerException e)
 		{
 			e.printStackTrace();
 		}
-		catch(ArrayIndexOutOfBoundsException e)
+		catch (ArrayIndexOutOfBoundsException e)
 		{
 			System.err.println("ERROR! Can't select any files!");
 		}
 	}
 
-	public void nextSong()
+	public void nextSong() // goes to the next song or plays a random song if shuffle is on
 	{
 		System.out.println("Selecting Next Song");
 		boolean playingTemp = playing;
 		stopSong();
-		if(shuffle)
+		if (shuffle)
 		{
 			songNum = rando.nextInt((files.length - 1) - 0 + 1) + 0;
 		}
 		else
 		{
-			if(songNum == files.length - 1)
+			if (songNum == files.length - 1)
 			{
 				songNum = 0;
 			}
@@ -264,7 +297,7 @@ public class Player
 				songNum++;
 			}
 		}
-		if(playingTemp)
+		if (playingTemp)
 		{
 			playSong();
 		}
@@ -272,12 +305,12 @@ public class Player
 		startPopup();
 	}
 
-	public void prevSong()
+	public void prevSong() // go to the song above the current song
 	{
 		System.out.println("Selecting Previous Song");
 		boolean playingTemp = playing;
 		stopSong();
-		if(songNum == 0)
+		if (songNum == 0)
 		{
 			songNum = files.length - 1;
 		}
@@ -285,7 +318,7 @@ public class Player
 		{
 			songNum--;
 		}
-		if(playingTemp)
+		if (playingTemp)
 		{
 			playSong();
 		}
@@ -293,13 +326,13 @@ public class Player
 		startPopup();
 	}
 
-	public void toggleLoop()
+	public void toggleLoop() // toggles single song loop
 	{
 		listener.loop = !listener.loop;
 		System.out.println("Set loop to " + listener.loop);
 	}
 
-	public void toggleShuffle()
+	public void toggleShuffle() // toggles shuffle
 	{
 		shuffle = !shuffle;
 		System.out.println("Set shuffle to " + shuffle);
@@ -310,45 +343,33 @@ public class Player
 		songNum = num;
 	}
 
-	public String getCurrentSong() // Return name of the current song
+	public String getCurrentSong() // Returns the name of the current song
 	{
 		return currentSongName;
 	}
 
-	public String getSelectedSongName()
+	public String getSelectedSongName() // Returns the name of the selected song
 	{
 		return selectedSongName[selectedSong];
 	}
 
-	String getFileName(String f) // Converts to char and returns file
-	{									// name without file extension
+	String getFileName(String f) // Converts to char and returns file name without file extension
+	{
 		String ans = "";
 		char[] charA = f.toCharArray();
-		for(int i = 0; i < charA.length - 4; i++)
+		for (int i = 0; i < charA.length - 4; i++)
 		{
 			ans = ans + charA[i];
 		}
 		return ans;
 	}
 
-	public void startPopup() // used to show a popup in the corner
-	{						 // to show what song is selected
-		if(!songPopup)
+	public void startPopup() // used to show a popup in the corner to show what song is selected
+	{
+		if (!songPopup)
 		{
 			songPopup = true;
 			popupTimer = 0;
-			new Thread(new Runnable()
-			{
-				public void run()
-				{
-					while(songPopup && popupTimer < 300)
-					{
-						popupTimer++;
-						frameRate(60);
-					}
-					stopPopup();
-				}
-			}).start();
 		}
 		else
 		{
@@ -371,7 +392,7 @@ public class Player
 	{
 		selectedSong = num;
 	}
-	
+
 	public boolean canSeek()
 	{
 		return seekable;
@@ -383,17 +404,17 @@ public class Player
 		{
 			Thread.sleep(1000 / num);
 		}
-		catch(InterruptedException e)
+		catch (InterruptedException e)
 		{
 			System.err.println("Sleep Exception!");
 		}
 	}
 
-	public BufferedImage getResizedArtwork(int x, int y)
+	public BufferedImage getResizedArtwork(int x, int y) // Returns the artwork of the currently playing song in the dimensions specified
 	{
 		try
 		{
-			if((artworkSizeInfo[0] != x && artworkSizeInfo[1] != y) || savedArtwork != artwork)
+			if ((artworkSizeInfo[0] != x && artworkSizeInfo[1] != y) || savedArtwork != artwork)
 			{
 				System.out.println("Resizing Image");
 				resizedArtwork = Thumbnails.of(artwork).size(x, y).asBufferedImage();
@@ -407,15 +428,15 @@ public class Player
 				return resizedArtwork;
 			}
 		}
-		catch(IOException | NullPointerException e)
+		catch (IOException | NullPointerException e)
 		{
 			return resizedArtwork;
 		}
 	}
-	
+
 	public BufferedImage getShuffleIcon()
 	{
-		if(isShuffle())
+		if (isShuffle())
 		{
 			return shuffleIcon[1];
 		}
@@ -424,10 +445,10 @@ public class Player
 			return shuffleIcon[0];
 		}
 	}
-	
+
 	public BufferedImage getRepeatIcon()
 	{
-		if(isRepeat())
+		if (isRepeat())
 		{
 			return repeatIcon[1];
 		}
@@ -439,17 +460,17 @@ public class Player
 
 	public void updateSelectedSongTags()
 	{
-		for(int i = 0; i < files.length; i++)
+		for (int i = 0; i < files.length; i++)
 		{
 			try
 			{
 				selectedMP3File[i] = (MP3File) AudioFileIO.read(files[i]);
 			}
-			catch(CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e)
+			catch (CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e)
 			{
 				e.printStackTrace();
 			}
-			if(selectedMP3File[i].hasID3v2Tag())
+			if (selectedMP3File[i].hasID3v2Tag())
 			{
 				selectedSongV24Tag[i] = selectedMP3File[i].getID3v2TagAsv24();
 			}
@@ -457,7 +478,7 @@ public class Player
 			{
 				selectedSongV24Tag[i] = null;
 			}
-			if(selectedSongV24Tag[i] != null && !(selectedSongV24Tag[i].getFirst(ID3v24FieldKey.ARTIST).equals("") && selectedSongV24Tag[i].getFirst(ID3v24FieldKey.TITLE).equals("")))
+			if (selectedSongV24Tag[i] != null && !(selectedSongV24Tag[i].getFirst(ID3v24FieldKey.ARTIST).equals("") && selectedSongV24Tag[i].getFirst(ID3v24FieldKey.TITLE).equals("")))
 			{
 				selectedSongName[i] = selectedSongV24Tag[i].getFirst(ID3v24FieldKey.ARTIST) + " - " + selectedSongV24Tag[i].getFirst(ID3v24FieldKey.TITLE);
 			}
@@ -471,7 +492,7 @@ public class Player
 	void updateCurrentSongTag()
 	{
 		currentSongV24Tag = selectedSongV24Tag[songNum];
-		if(selectedMP3File[songNum].hasID3v1Tag())
+		if (selectedMP3File[songNum].hasID3v1Tag())
 		{
 			currentSongTag = selectedMP3File[songNum].getTag();
 		}
@@ -479,7 +500,7 @@ public class Player
 		{
 			currentSongTag = null;
 		}
-		if(currentSongV24Tag != null && !(currentSongV24Tag.getFirst(ID3v24FieldKey.ARTIST).equals("") && currentSongV24Tag.getFirst(ID3v24FieldKey.TITLE).equals("")))
+		if (currentSongV24Tag != null && !(currentSongV24Tag.getFirst(ID3v24FieldKey.ARTIST).equals("") && currentSongV24Tag.getFirst(ID3v24FieldKey.TITLE).equals("")))
 		{
 			currentSongName = currentSongV24Tag.getFirst(ID3v24FieldKey.ARTIST) + " - " + currentSongV24Tag.getFirst(ID3v24FieldKey.TITLE);
 		}
@@ -491,30 +512,30 @@ public class Player
 		{
 			artwork = Images.getImage(currentSongTag.getFirstArtwork());
 		}
-		catch(NullPointerException | IOException e)
+		catch (NullPointerException | IOException e)
 		{
 			artwork = noArt;
 		}
 	}
-	
+
 	public boolean isShuffle()
 	{
 		return shuffle;
 	}
-	
+
 	public boolean isRepeat()
 	{
 		return listener.loop;
 	}
 
-	public int getID()
+	public int getID() // Returns the id of the current player
 	{
 		return id;
 	}
 
-	public int[] getCurrentDuration()
+	public int[] getCurrentDuration() // Returns an array with the current time in minutes and seconds
 	{
-		if(timer == null)
+		if (timer == null)
 		{
 			return new int[] { 0, 0 };
 		}
@@ -523,16 +544,16 @@ public class Player
 			return new int[] { timer.getSeconds(), timer.getMinutes() };
 		}
 	}
-
-	public String getFormattedDuration()
+	
+	public String formatDuration(int milliseconds) // returns the time formatted to be min:sec/min:sec
 	{
 		String temp = "";
-		if(timer != null)
+		if (timer != null)
 		{
-			if(timer.getSeconds() > 9)
+			if (milliseconds/1000%60 > 9)
 			{
-				temp = timer.getMinutes() + ":" + timer.getSeconds();
-				if(getTotalDuration() % 60 > 9)
+				temp = milliseconds/1000/60 + ":" + milliseconds/1000%60;
+				if (getTotalDuration() % 60 > 9)
 				{
 					temp = temp + "/" + getTotalDuration() / 60 + ":" + getTotalDuration() % 60;
 				}
@@ -544,8 +565,8 @@ public class Player
 			}
 			else
 			{
-				temp = timer.getMinutes() + ":0" + timer.getSeconds();
-				if(getTotalDuration() % 60 > 9)
+				temp = milliseconds/1000/60 + ":0" + milliseconds/1000%60;
+				if (getTotalDuration() % 60 > 9)
 				{
 					temp = temp + "/" + getTotalDuration() / 60 + ":" + getTotalDuration() % 60;
 				}
@@ -561,25 +582,61 @@ public class Player
 			return "0:00/0:00";
 		}
 	}
-	
-	public int getCurrentMillis()
+
+	@Deprecated
+	public String getFormattedDuration() // please use formatDuration
 	{
-		if(timer.getMilliseconds()!=0)
-		return timer.getMilliseconds();
+		String temp = "";
+		if (timer != null)
+		{
+			if (timer.getSeconds() > 9)
+			{
+				temp = timer.getMinutes() + ":" + timer.getSeconds();
+				if (getTotalDuration() % 60 > 9)
+				{
+					temp = temp + "/" + getTotalDuration() / 60 + ":" + getTotalDuration() % 60;
+				}
+				else
+				{
+					temp = temp + "/" + getTotalDuration() / 60 + ":0" + getTotalDuration() % 60;
+				}
+				return temp;
+			}
+			else
+			{
+				temp = timer.getMinutes() + ":0" + timer.getSeconds();
+				if (getTotalDuration() % 60 > 9)
+				{
+					temp = temp + "/" + getTotalDuration() / 60 + ":" + getTotalDuration() % 60;
+				}
+				else
+				{
+					temp = temp + "/" + getTotalDuration() / 60 + ":0" + getTotalDuration() % 60;
+				}
+				return temp;
+			}
+		}
 		else
-			return 0;
+		{
+			return "0:00/0:00";
+		}
 	}
 
-	public void startTimer()
+	public int getCurrentMillis()
+	{
+		return timer.getMilliseconds();
+	}
+
+	public void startTimer() // Starts the timer
 	{
 		timer.startTimer(0);
 	}
 
-	void stopTimer()
+	void stopTimer() // Stops the timer
 	{
 		timer.stopTimer();
 	}
-	
+
 	public boolean isPlaying()
 	{
 		return playing;
@@ -589,43 +646,44 @@ public class Player
 	{
 		return selectedMP3File[songNum].getMP3AudioHeader().getTrackLength();
 	}
-	
+
 	public void setGain(float gain)
 	{
 		this.gain = gain;
 		ap.setGain(gain);
 	}
-	
+
 	public float getGain()
 	{
 		return gain;
 	}
-	
+
 	/**
-	 * @param vol 0 = 0%, 1 = 100%
+	 * @param vol
+	 *            0 = 0%, 1 = 100%
 	 */
 	public void setVolume(float vol)
 	{
-		if(vol !=0)
+		if (vol != 0)
 		{
-			setGain((float)(20.0f * Math.log10(vol)));
+			setGain((float) (20.0f * Math.log10(vol)));
 		}
 		else
 		{
 			setGain(-144.0f);
 		}
 	}
-	
+
 	public void setEqualizer(Equalizer eq)
 	{
 		equalizer = eq;
 		ap.setEqualizer(equalizer);
 	}
 
-	class PBListener extends PlaybackListener // Triggers when a song ends
+	class PBListener extends PlaybackListener // gets called when a song ends/starts
 	{
 		boolean loop = false;
-		
+
 		public void playbackStarted(PlaybackEvent e)
 		{
 			seekable = true;
@@ -635,12 +693,12 @@ public class Player
 		{
 			System.out.println("Receieved Finish Event");
 			seekable = false;
-			if(!paused)
+			if (!paused)
 			{
-				if(loop)
+				if (loop)
 				{
 					playing = false;
-					if(timer != null)
+					if (timer != null)
 					{
 						stopTimer();
 					}
@@ -653,7 +711,7 @@ public class Player
 					nextSong();
 				}
 			}
-			else if(timer.getMilliseconds() > 49)
+			else if (timer.getMilliseconds() > 49)
 			{
 				timer.setTime(timer.getMilliseconds() - 50);
 			}

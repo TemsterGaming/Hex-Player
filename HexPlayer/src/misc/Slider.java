@@ -38,7 +38,7 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 	public void paint(Graphics g)
 	{
 		g.setColor(sliderColor);
-		if(vertical)
+		if (vertical)
 		{
 			g.fillRect(outline, getHeight() - (int) (value / total * getHeight()) + outline, getWidth() - (outline * 2), (int) (value / total * getHeight()) - (outline * 2));
 		}
@@ -107,14 +107,11 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 
 	public void mouseReleased(MouseEvent e)
 	{
-		if(e.getButton() != MouseEvent.BUTTON1 && leftOnly)
+		if (e.getButton() == MouseEvent.BUTTON1 && !leftOnly)
 		{
-		}
-		else
-		{
-			if(isClick())
+			if (isClick())
 			{
-				if(vertical)
+				if (vertical)
 				{
 					value = (getHeight() - e.getY()) * (total / getHeight());
 				}
@@ -122,11 +119,11 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 				{
 					value = e.getX() * (total / getWidth());
 				}
-				if(value > total)
+				if (value > total)
 				{
 					value = total;
 				}
-				else if(value < 0)
+				else if (value < 0)
 				{
 					value = 0;
 				}
@@ -150,12 +147,12 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 	public void mouseDragged(MouseEvent e)
 	{
 		clicked = false;
-		if(!MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1") && leftOnly)
+		if (!MouseEvent.getMouseModifiersText(e.getModifiersEx()).equals("Button1") && leftOnly)
 		{
 		}
 		else
 		{
-			if(vertical)
+			if (vertical)
 			{
 				value = (getHeight() - e.getY()) * (total / getHeight());
 			}
@@ -163,11 +160,11 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 			{
 				value = e.getX() * (total / getWidth());
 			}
-			if(value > total)
+			if (value > total)
 			{
 				value = total;
 			}
-			else if(value < 0)
+			else if (value < 0)
 			{
 				value = 0;
 			}
