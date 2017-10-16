@@ -17,6 +17,8 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 	private int outline;
 	private boolean vertical;
 	private boolean leftOnly;
+	private int[] mousePos = new int[2];
+	private String description;
 
 	public Slider()
 	{
@@ -46,6 +48,16 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 		{
 			g.fillRect(outline, outline, (int) (value / total * getWidth()) - (outline * 2), getHeight() - (outline * 2));
 		}
+	}
+	
+	public void setDesc(String desc)
+	{
+		description = desc;
+	}
+	
+	public String getDesc()
+	{
+		return description;
 	}
 
 	public void setValue(float value)
@@ -142,6 +154,8 @@ public class Slider extends Panel implements MouseListener, MouseMotionListener
 
 	public void mouseMoved(MouseEvent e)
 	{
+		mousePos[0] = e.getX();
+		mousePos[1] = e.getY();
 	}
 
 	public void mouseDragged(MouseEvent e)

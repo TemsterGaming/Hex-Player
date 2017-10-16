@@ -45,9 +45,9 @@ import misc.ToggleButton;
 
 public class Main
 {
-	FilenameFilter mp3Filter = new FilenameFilter() // Used to filter out
-	{ // files/folders that
-		public boolean accept(File f, String s) // don't end in ".mp3"
+	FilenameFilter mp3Filter = new FilenameFilter() // Used to filter out files/folders that don't end in ".mp3"
+	{
+		public boolean accept(File f, String s)
 		{
 			if (s.endsWith(".mp3"))
 			{
@@ -60,9 +60,9 @@ public class Main
 		}
 	};
 
-	FilenameFilter plFilter = new FilenameFilter() // Used to filter out
-	{ // files/folders that
-		public boolean accept(File f, String s) // don't end in ".pl"
+	FilenameFilter plFilter = new FilenameFilter() // Used to filter out files/folders that don't end in ".pl"
+	{
+		public boolean accept(File f, String s)
 		{
 			if (s.endsWith(".pl"))
 			{
@@ -78,23 +78,23 @@ public class Main
 	private VolumeChanger volChanger; // equalizer/volume window
 	private static Frame frame; // main window
 	private static Panel mainPanel;
-	private static ButtonPanel buttons;
-	private static SongPanel songPanel;
-	private Slider slider;
-	private Player player;
-	private List[] playlistListMenu;
-	private static TextField playlistNameField;
-	private static BufferedImage[] buttonPng = new BufferedImage[8];
-	private static TImageButton tPlay, tPause, tStop, tNext, tPrev, tLoop, shuffle, equalizerButton;
-	private static List songList, playlistList, playlistNewList, deleteConfirmMenu;
-	private File[] files;
-	private static int[] textScroll;
-	private File[] playlistFiles;
-	private TPlaylist[] playlist;
-	private File dir, playlistDir;
-	private File eqFile;
-	private int selectedForDeletion;
-	private static boolean frameReady = false;
+	private static ButtonPanel buttons; // panel for the buttons on the left
+	private static SongPanel songPanel; // panel for song selection, seek bar and song info
+	private Slider slider; // seek bar
+	private Player player; // The music player
+	private List[] playlistListMenu; // list of songs in a playlist
+	private static TextField playlistNameField; // textfield for setting a playlist's name when creating it
+	private static BufferedImage[] buttonPng = new BufferedImage[8]; // all the images for the buttons
+	private static TImageButton tPlay, tPause, tStop, tNext, tPrev, tLoop, shuffle, equalizerButton; // all the buttons on the left
+	private static List songList, playlistList, playlistNewList, deleteConfirmMenu; // lists for songs/playlists, creating playlists and confirming deletion of a playlist
+	private File[] files; // songs
+	private static int[] textScroll; // used to make the text of the current playing song scroll across the screen
+	private File[] playlistFiles; // all the .pl files
+	private TPlaylist[] playlist; // all the playlists
+	private File dir, playlistDir; // songs folder and playlist folder
+	private File eqFile; // equalizer.eq in the songs folder
+	private int selectedForDeletion; // used to keep track of which playlist was selected for deletion
+	private static boolean frameReady = false; // used to stop the graphics breaking
 
 	public static void main(String args[])
 	{
@@ -113,7 +113,7 @@ public class Main
 	{
 		try
 		{
-			frame.setIconImage(ImageIO.read(getClass().getClassLoader().getResource("icon.png")));
+			frame.setIconImage(ImageIO.read(getClass().getClassLoader().getResource("icon.png"))); // sets the icon for the window
 		}
 		catch (IOException e2)
 		{
@@ -121,7 +121,7 @@ public class Main
 		}
 		frame.addWindowListener(new WindowAdapter()
 		{
-			public void windowClosing(WindowEvent windowevent)
+			public void windowClosing(WindowEvent windowevent) // updates the equalizer and closes the program upon clicked the close button
 			{
 				volChanger.updateEqFile();
 				System.exit(0);
@@ -129,7 +129,7 @@ public class Main
 		});
 		frame.addComponentListener(new ComponentAdapter()
 		{
-			public void componentResized(ComponentEvent e)
+			public void componentResized(ComponentEvent e) // resizes all the components when the window changes size
 			{
 				buttons.setLocation(0, 0);
 				buttons.resizePanel((int) (mainPanel.getWidth() / 14.222), mainPanel.getHeight());
@@ -144,18 +144,18 @@ public class Main
 			dir = new File(dirString);
 			if (!dir.exists())
 			{
-				System.out.println("Songs Folder Not Found, Trying Test Folder");
+				System.out.println("Songs Folder Not Found, Trying Test Folder"); // using the songs folder in my usb does not work in eclipse, this is a workaround
 				dirString = "V:/Songs";
 				dir = new File(dirString);
-				if (!dir.exists())
+				if (!dir.exists()) // TODO should probably change this to creating the songs directory and display no songs
 				{
 					System.exit(0);
 				}
 			}
-			playlistDir = new File(dirString + "/Playlists");
+			playlistDir = new File(dirString + "/Playlists"); // sets the location of the playlists to (jar location)/Songs/Playlists
 			if (!playlistDir.exists())
 			{
-				playlistDir.mkdir();
+				playlistDir.mkdir(); // creates the playlists folder if it doesn't exist
 			}
 		}
 		catch (java.lang.NullPointerException e)
@@ -170,18 +170,18 @@ public class Main
 			System.exit(0);
 		}
 
-		files = dir.listFiles(mp3Filter);
-		eqFile = new File(dir.getPath() + "/equalizer.eq");
+		files = dir.listFiles(mp3Filter); // checks for all .mp3 files
+		eqFile = new File(dir.getPath() + "/equalizer.eq"); // sets the location of equalizer.eq to (jar location)/Songs
 		try
 		{
-			eqFile.createNewFile();
+			eqFile.createNewFile(); // tries to create the equalizer file if it doesn't exist
 		}
 		catch (IOException e2)
 		{
 			e2.printStackTrace();
 		}
 
-		try
+		try // reads the .png files for the buttons from inside the jar file
 		{
 			buttonPng[0] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("play.png"));
 			buttonPng[1] = ImageIO.read(getClass().getClassLoader().getResourceAsStream("stop.png"));
@@ -196,12 +196,13 @@ public class Main
 		{
 			e.printStackTrace();
 		}
-		catch (NullPointerException e1)
+		catch (NullPointerException e1) // can't remember why this is here, probably if a file is missing
 		{
 			e1.printStackTrace();
 			System.exit(0);
 		}
 
+		// creating the buttons and adding the images to them
 		tPlay = new TImageButton(0, 0, 45, 45, buttonPng[0], null, Color.black);
 		tStop = new TImageButton(0, 0, 45, 45, buttonPng[1], null, Color.black);
 		tNext = new TImageButton(0, 0, 45, 45, buttonPng[2], null, Color.black);
@@ -215,6 +216,7 @@ public class Main
 		System.out.println("Starting Player");
 		player = new Player(files);
 
+		// creating and preparing all of the panels
 		buttons = new ButtonPanel();
 		songPanel = new SongPanel();
 		songPanel.setLayout(null);
@@ -228,6 +230,7 @@ public class Main
 		frame.setVisible(true);
 		frameReady = true;
 
+		// loading the playlists
 		reloadPlaylists();
 	}
 
@@ -243,7 +246,7 @@ public class Main
 		}
 	}
 
-	public void reloadPlaylists()
+	public void reloadPlaylists() // updates the playlists
 	{
 		playlistFiles = playlistDir.listFiles(plFilter);
 		playlist = new TPlaylist[playlistDir.listFiles(plFilter).length];
@@ -279,7 +282,7 @@ public class Main
 		}
 	}
 
-	public void createPlaylist()
+	public void createPlaylist() // creates a new playlist
 	{
 		TPlaylist newPlaylist = new TPlaylist(new File(playlistDir.getPath() + "/" + playlistNameField.getText() + ".pl"), true);
 		for (int i = 1; i < playlistNewList.getItemCount() - 1; i++)
@@ -296,7 +299,7 @@ public class Main
 		setUI(playlistList);
 	}
 
-	public void setUI(Component ui)
+	public void setUI(Component ui) // used to switch between all the lists
 	{
 		if (songList.isVisible())
 			songList.setVisible(false);
@@ -320,7 +323,7 @@ public class Main
 		}
 	}
 
-	public void deselectAll(List list)
+	public void deselectAll(List list) // deselects anything selected in the list
 	{
 		if (list.isMultipleMode())
 		{
@@ -335,7 +338,7 @@ public class Main
 		}
 	}
 
-	public void prepareDeletion(int num)
+	public void prepareDeletion(int num) // updates the deletion confirmation menu with the name of the playlist to delete and selects the playlist to delete
 	{
 		selectedForDeletion = num;
 		deleteConfirmMenu.removeAll();
@@ -344,12 +347,13 @@ public class Main
 		deleteConfirmMenu.add("NO!");
 	}
 
-	public class ButtonPanel extends Panel implements MouseListener
+	public class ButtonPanel extends Panel implements MouseListener // panel for the buttons on the left
 	{
+		// double buffer
 		Graphics buffer;
 		BufferedImage offscreen;
 
-		public ButtonPanel()
+		public ButtonPanel() // creating the panel
 		{
 			super();
 			offscreen = new BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB);
@@ -364,7 +368,7 @@ public class Main
 			paint(g);
 		}
 
-		public void paint(Graphics g)
+		public void paint(Graphics g) // drawing the buttons to the screen and updating their location/size
 		{
 			buffer.setColor(Color.LIGHT_GRAY);
 			buffer.fillRect(0, 0, getWidth(), getHeight());
@@ -377,7 +381,7 @@ public class Main
 			super.repaint();
 		}
 
-		public void drawButtons(Graphics g)
+		public void drawButtons(Graphics g) // draws the buttons
 		{
 			tPlay.drawButton(g);
 			tStop.drawButton(g);
@@ -389,7 +393,7 @@ public class Main
 			equalizerButton.drawButton(g);
 		}
 
-		public void setButtonLocation()
+		public void setButtonLocation() // sets the buttons locations
 		{
 			tPlay.setLocation(0, 0);
 			tPause.setLocation(0, getWidth());
@@ -401,7 +405,7 @@ public class Main
 			equalizerButton.setLocation(0, getWidth() * 7);
 		}
 
-		public void setButtonSize()
+		public void setButtonSize() // sets the buttons size
 		{
 			tPrev.setSize(getWidth(), getWidth());
 			tPlay.setSize(getWidth(), getWidth());
@@ -413,7 +417,7 @@ public class Main
 			equalizerButton.setSize(getWidth(), getWidth());
 		}
 
-		public void resizePanel(int width, int height)
+		public void resizePanel(int width, int height) // resizes the button panel to keep all buttons on screen
 		{
 			if (width * 8 > height)
 			{
@@ -478,8 +482,9 @@ public class Main
 		}
 	}
 
-	public class SongPanel extends Panel implements ActionListener, ItemListener, MouseListener, MouseMotionListener
+	public class SongPanel extends Panel implements ActionListener, ItemListener, MouseListener
 	{
+		// Double Buffer
 		Graphics buffer;
 		BufferedImage offscreen;
 
@@ -553,7 +558,7 @@ public class Main
 						{
 							textScroll[0] = getWidth() - (getHeight() / 3);
 						}
-						if (player.canSeek())
+						if (player.canSeek()) // prevents the seek bar from updating while it's being dragged
 						{
 							slider.setTotal(player.getTotalDuration() * 1000);
 							if (!slider.isDragging())
@@ -575,44 +580,51 @@ public class Main
 
 		public void paint(Graphics g)
 		{
-			super.paint(buffer);
-			if (frameReady)
+			if (frameReady) // used so the graphics don't break when the program starts
 			{
+				// updates the size and location of the lists and seek bar
 				setUILocation();
 				setUISize();
+				// draws the black background behind the scrolling text
 				buffer.setColor(Color.BLACK);
 				buffer.fillRect(0, 0, getWidth(), getHeight());
 				buffer.setColor(Color.WHITE);
+				// draws the scrolling text, it will only draw one if the 2nd one can't fit
 				buffer.drawString(player.getCurrentSong(), textScroll[0], (int) (getHeight() / 6));
 				if (buffer.getFontMetrics().stringWidth(player.getCurrentSong()) + 10 < getWidth())
 				{
 					buffer.drawString(player.getCurrentSong(), textScroll[1], (int) (getHeight() / 6));
 				}
+				// shows the time the song is at or the time the seek bar is being dragged to
 				if (!slider.isDragging())
 				{
 					buffer.drawString(player.formatDuration(player.getCurrentMillis()), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 2, (int) (getHeight() / 3) - 5);
 				}
 				else
 				{
-					if (slider.getValue() / 1000 % 60 > 9) // prints an extra 0 in seconds if the seconds
+					if (slider.getValue() / 1000 % 60 > 9) // prints an extra 0 in seconds if seconds is less than 10
 					{
-						buffer.drawString(player.formatDuration((int)slider.getValue()), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 2, (int) (getHeight() / 3) - 5);
+						buffer.drawString(player.formatDuration((int) slider.getValue()), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 2, (int) (getHeight() / 3) - 5);
 					}
 				}
+				// draws the album art
 				buffer.drawImage(player.getResizedArtwork(getHeight() / 3, getHeight() / 3), getWidth() - (getHeight() / 3), 0, getHeight() / 3, getHeight() / 3, null);
+				// draws the shuffle and repeat icons next to the time
 				buffer.drawImage(player.getShuffleIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 25, (int) (getHeight() / 3) - 23, null);
 				buffer.drawImage(player.getRepeatIcon(), getWidth() - (getHeight() / 3) - getStringLength(player.formatDuration(player.getCurrentMillis())) - 50, (int) (getHeight() / 3) - 23, null);
+				// displays the name of the selected song for 5 seconds
 				if (player.isPopup())
 				{
 					buffer.drawString(player.getSelectedSongName(), 5, (int) (getHeight() / 3) - 10);
 				}
+				// draws everything to the screen
 				g.drawImage(offscreen, 0, 0, null);
 				frameRate(60);
 				super.repaint();
 			}
 		}
 
-		public void setUILocation()
+		public void setUILocation() // updates the location of the lists and seek bar
 		{
 			songList.setLocation(0, getHeight() / 3);
 			playlistList.setLocation(0, getHeight() / 3);
@@ -626,7 +638,7 @@ public class Main
 			slider.setLocation(5, 5);
 		}
 
-		public void setUISize()
+		public void setUISize() // updates the size of the lists and seek bar
 		{
 			songList.setSize(getWidth(), getHeight() - (getHeight() / 3));
 			playlistList.setSize(getWidth(), getHeight() - (getHeight() / 3));
@@ -787,16 +799,6 @@ public class Main
 		public void mouseExited(MouseEvent e)
 		{
 		}
-
-		@Override
-		public void mouseDragged(MouseEvent arg0)
-		{
-		}
-
-		@Override
-		public void mouseMoved(MouseEvent arg0)
-		{
-		}
 	}
 
 	public class VolumeChanger implements MouseListener, MouseMotionListener
@@ -842,6 +844,7 @@ public class Main
 					}
 				}
 			});
+
 			volPanel = new Panel();
 			volPanel.setLayout(null);
 			volPanel.setBackground(Color.black);
@@ -859,6 +862,7 @@ public class Main
 					sliders[i].setTotal(2);
 					sliders[i].setValue(1);
 					sliders[i].setLeftOnly(true);
+					sliders[i].setDesc("Equalizer");
 				}
 			}
 			for (int i = 0; i < toggles.length; i++)
@@ -870,6 +874,7 @@ public class Main
 			}
 			sliders[0].setTotal(1);
 			sliders[0].setValue(0.10f);
+			sliders[0].setDesc("Volume");
 			player.setVolume(0.10f);
 			readEqFile();
 		}
