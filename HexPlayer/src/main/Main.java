@@ -147,7 +147,7 @@ public class Main
 				System.out.println("Songs Folder Not Found, Trying Test Folder"); // using the songs folder in my usb does not work in eclipse, this is a workaround
 				dirString = "V:/Songs";
 				dir = new File(dirString);
-				if (!dir.exists()) // TODO should probably change this to creating the songs directory and display no songs
+				if (!dir.exists()) // should probably change this to creating the songs directory and display no songs
 				{
 					System.exit(0);
 				}
